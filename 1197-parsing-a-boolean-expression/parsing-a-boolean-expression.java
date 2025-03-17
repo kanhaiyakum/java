@@ -1,40 +1,39 @@
-public class Solution {
-
+class Solution {
     public boolean parseBoolExpr(String expression) {
-        Stack<Character> st = new Stack<>();
+        Stack<Character> stk = new Stack<>(); 
 
-        for (char currChar : expression.toCharArray()) {
-            if (currChar == ',' || currChar == '(') continue; 
-            if (
-                currChar == 't' ||
-                currChar == 'f' ||
-                currChar == '!' ||
-                currChar == '&' ||
-                currChar == '|'
-            ) {
-                st.push(currChar);
-            }
-            else if (currChar == ')') {
-                boolean hasTrue = false, hasFalse = false;
-
-                while (
-                    st.peek() != '!' && st.peek() != '&' && st.peek() != '|'
-                ) {
-                    char topValue = st.pop();
-                    if (topValue == 't') hasTrue = true;
-                    if (topValue == 'f') hasFalse = true;
+        for (char c : expression.toCharArray()) {
+            if (c != ')' && c != ',') stk.push(c);
+            else if (c == ')') {  
+                ArrayList<Boolean> exp = new ArrayList<>();  
+                
+                while (!stk.isEmpty() && stk.peek() != '(') {
+                    char t = stk.pop();
+                    if (t == 't') exp.add(true);
+                    else exp.add(false);
                 }
-
-                char op = st.pop();
-                if (op == '!') {
-                    st.push(hasTrue ? 'f' : 't');
-                } else if (op == '&') {
-                    st.push(hasFalse ? 'f' : 't');
-                } else {
-                    st.push(hasTrue ? 't' : 'f');
+                
+                stk.pop();  
+                
+                if (!stk.isEmpty()) {
+                    char t = stk.pop();  
+                    boolean v = exp.get(0); 
+                    
+                   
+                    if (t == '&') {  
+                        for (boolean b : exp) v &= b;
+                    } else if (t == '|') {  
+                        for (boolean b : exp) v |= b;
+                    } else {  
+                        v = !v;
+                    }
+                    
+                    if (v) stk.push('t');
+                    else stk.push('f');
                 }
             }
         }
-        return st.peek() == 't';
+
+        return stk.peek() == 't';
     }
 }

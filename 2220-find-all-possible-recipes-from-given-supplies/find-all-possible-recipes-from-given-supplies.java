@@ -1,36 +1,50 @@
-import java.util.*;
-
 class Solution {
+    private Set<String> availableSupplies;
+    private Map<String, List<String>> recipeToIngredients;
+    private Map<String, Integer> visited;
+    private List<String> result;
+
     public List<String> findAllRecipes(String[] recipes, List<List<String>> ingredients, String[] supplies) {
-        Map<String, List<String>> graph = new HashMap<>();
-        Map<String, Integer> indegree = new HashMap<>();   
-        Set<String> available = new HashSet<>(Arrays.asList(supplies));
-        List<String> result = new ArrayList<>();
+        availableSupplies = new HashSet<>(Arrays.asList(supplies));
+        recipeToIngredients = new HashMap<>();
+        visited = new HashMap<>();
+        result = new ArrayList<>();
 
         for (int i = 0; i < recipes.length; i++) {
-            String recipe = recipes[i];
-            indegree.put(recipe, ingredients.get(i).size());
-
-            for (String ing : ingredients.get(i)) {
-                graph.computeIfAbsent(ing, k -> new ArrayList<>()).add(recipe);
-            }
+            recipeToIngredients.put(recipes[i], ingredients.get(i));
         }
 
-        Queue<String> queue = new LinkedList<>(available);
-
-        while (!queue.isEmpty()) {
-            String item = queue.poll();
-            if (!graph.containsKey(item)) continue;
-
-            for (String recipe : graph.get(item)) {
-                indegree.put(recipe, indegree.get(recipe) - 1);
-                if (indegree.get(recipe) == 0) {
-                    result.add(recipe);
-                    queue.add(recipe);
-                }
-            }
+        for (String recipe : recipes) {
+            canMake(recipe);
         }
 
         return result;
+    }
+
+    private boolean canMake(String recipe) {
+        if (visited.containsKey(recipe)) {
+            return visited.get(recipe) == 1;
+        }
+
+        if (availableSupplies.contains(recipe)) {
+            return true;
+        }
+
+        if (!recipeToIngredients.containsKey(recipe)) {
+            return false;
+        }
+
+        visited.put(recipe, 0);
+
+        for (String ingredient : recipeToIngredients.get(recipe)) {
+            if (!canMake(ingredient)) {
+                visited.put(recipe, -1);
+                return false;
+            }
+        }
+
+        visited.put(recipe, 1);
+        result.add(recipe);
+        return true;
     }
 }

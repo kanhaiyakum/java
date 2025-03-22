@@ -1,64 +1,53 @@
 class Solution {
     int[] parent;
     int[] rank;
-
     public int countCompleteComponents(int n, int[][] edges) {
         parent = new int[n];
         rank = new int[n];
-
         for (int i = 0; i < n; i++) {
             parent[i] = i;
+            rank[i] = 1;
         }
-
         for (int[] edge : edges) {
             union(edge[0], edge[1]);
         }
-
-        Map<Integer, Set<Integer>> componentVertices = new HashMap<>();
-        Map<Integer, Integer> componentEdges = new HashMap<>();
-
+        int[] compSize = new int[n];
+        long[] compEdges = new long[n];
         for (int i = 0; i < n; i++) {
-            int root = find(i);
-            componentVertices.computeIfAbsent(root, k -> new HashSet<>()).add(i);
+            compSize[find(i)]++;
         }
-
         for (int[] edge : edges) {
-            int root = find(edge[0]);
-            componentEdges.put(root, componentEdges.getOrDefault(root, 0) + 1);
+            compEdges[find(edge[0])]++;
         }
-
-        int completeCount = 0;
-        for (int root : componentVertices.keySet()) {
-            int numVertices = componentVertices.get(root).size();
-            int expectedEdges = numVertices * (numVertices - 1) / 2;
-
-            if (componentEdges.getOrDefault(root, 0) == expectedEdges) {
-                completeCount++;
+        int count = 0;
+        for (int i = 0; i < n; i++) {
+            if (find(i) == i) {
+                if (compEdges[i] == (long) compSize[i] * (compSize[i] - 1) / 2) {
+                    count++;
+                }
             }
         }
-
-        return completeCount;
+        return count;
     }
-
-    int find(int x) {
+    
+    private int find(int x) {
         if (parent[x] != x) {
             parent[x] = find(parent[x]);
         }
         return parent[x];
     }
-
-    void union(int x, int y) {
-        int rootX = find(x);
-        int rootY = find(y);
-        if (rootX == rootY) return;
-
-        if (rank[rootX] < rank[rootY]) {
-            parent[rootX] = rootY;
-        } else if (rank[rootX] > rank[rootY]) {
-            parent[rootY] = rootX;
+    
+    private void union(int x, int y) {
+        int rx = find(x);
+        int ry = find(y);
+        if (rx == ry) return;
+        if (rank[rx] < rank[ry]) {
+            parent[rx] = ry;
+        } else if (rank[rx] > rank[ry]) {
+            parent[ry] = rx;
         } else {
-            parent[rootY] = rootX;
-            rank[rootX]++;
+            parent[ry] = rx;
+            rank[rx]++;
         }
     }
 }

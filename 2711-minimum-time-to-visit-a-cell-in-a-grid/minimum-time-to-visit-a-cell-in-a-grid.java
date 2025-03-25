@@ -1,48 +1,51 @@
-import java.util.*;
-
 class Solution {
+    private static final int[][] MOVES = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    
     public int minimumTime(int[][] grid) {
-        int row = grid.length;
-        int col = grid[0].length;
-
-        if (Math.min(grid[0][1], grid[1][0]) > 1) 
+        int rows = grid.length;
+        int cols = grid[0].length;
+        
+        if (grid[0][1] > 1 && grid[1][0] > 1) {
             return -1;
-
-        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
-        pq.add(new int[]{0, 0, 0});
-
-        boolean[][] visited = new boolean[row][col];
-        visited[0][0] = true;
-
-        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-
+        }
+        
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]); 
+        boolean[][] seen = new boolean[rows][cols];
+        
+        pq.offer(new int[]{0, 0, 0}); // time, row, col
+        seen[0][0] = true;
+        
         while (!pq.isEmpty()) {
-            int[] current = pq.poll();
-            int time = current[0];
-            int x = current[1];
-            int y = current[2];
-
-            if (x == row - 1 && y == col - 1) 
-                return time;
-
-            for (int[] dir : directions) {
-                int newX = x + dir[0];
-                int newY = y + dir[1];
-
-                if (newX >= 0 && newX < row && newY >= 0 && newY < col && !visited[newX][newY]) {
-                    int waitingTime = 0;
-                    int diff = Math.abs(grid[newX][newY] - time);
-
-                    if ((diff & 1) == 0) 
-                        waitingTime = 1;
-
-                    int newTime = Math.max(grid[newX][newY] + waitingTime, time + 1);
-                    pq.add(new int[]{newTime, newX, newY});
-                    visited[newX][newY] = true;
+            int[] curr = pq.poll();
+            int time = curr[0];
+            int row = curr[1];
+            int col = curr[2];
+            
+            for (int[] dir : MOVES) {
+                int newRow = row + dir[0];
+                int newCol = col + dir[1];
+                
+                if (newRow < 0 || newRow >= rows || 
+                    newCol < 0 || newCol >= cols || 
+                    seen[newRow][newCol]) {
+                    continue;
                 }
+                
+                int newTime = time + 1;
+                if (grid[newRow][newCol] > newTime) {
+                    int wait = ((grid[newRow][newCol] - newTime + 1) / 2) * 2;
+                    newTime += wait;
+                }
+                
+                if (newRow == rows - 1 && newCol == cols - 1) {
+                    return newTime;
+                }
+                
+                seen[newRow][newCol] = true;
+                pq.offer(new int[]{newTime, newRow, newCol});
             }
         }
-
+        
         return -1;
     }
 }

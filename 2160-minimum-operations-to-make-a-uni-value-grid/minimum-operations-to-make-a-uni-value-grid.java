@@ -1,28 +1,29 @@
-import java.util.*;
-
 class Solution {
     public int minOperations(int[][] grid, int x) {
-        List<Integer> all = new ArrayList<>();
-        
+        int n = grid.length, m = grid[0].length;
+        int[] freq = new int[10001];
+        boolean foundFalse = false;
+        int currChoice = grid[0][0];
         for (int[] row : grid) {
-            for (int num : row) {
-                all.add(num);
+            for (int y : row) {
+                freq[y]++;
+                if (Math.abs(currChoice - y) % x != 0)
+                    foundFalse = true;
             }
         }
-        
-        int mod = all.get(0) % x;
-        for (int num : all) {
-            if (num % x != mod) return -1;
+        if (foundFalse) return -1;
+        int[] arr = new int[n * m];
+        int k = 0;
+        for (int i = 0; i < 10001; i++) {
+            for (int j = 0; j < freq[i]; j++) {
+                arr[k++] = i;
+            }
         }
-
-        Collections.sort(all);
-        int median = all.get(all.size() / 2);
-        int operations = 0;
-
-        for (int num : all) {
-            operations += Math.abs(num - median) / x;
+        int count = 0;
+        int median = arr[arr.length / 2];
+        for (int num : arr) {
+            count += Math.abs(num - median) / x;
         }
-
-        return operations;
+        return count;
     }
 }

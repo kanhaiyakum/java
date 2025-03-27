@@ -1,30 +1,37 @@
-import java.util.Deque;
-import java.util.LinkedList;
-
 class Solution {
     public int shortestSubarray(int[] nums, int k) {
-        int n = nums.length;
-        long[] prefix = new long[n + 1];
-
-        for (int i = 0; i < n; i++) {
-            prefix[i + 1] = prefix[i] + nums[i];
-        }
-
-        Deque<Integer> deque = new LinkedList<>();
-        int minLength = Integer.MAX_VALUE;
-
-        for (int i = 0; i <= n; i++) {
-            while (!deque.isEmpty() && prefix[i] - prefix[deque.peekFirst()] >= k) {
-                minLength = Math.min(minLength, i - deque.pollFirst());
+        int n=nums.length;
+        if(n==1)
+        {
+            if(nums[0]>=k)
+            {
+                return 1;
             }
-
-            while (!deque.isEmpty() && prefix[i] <= prefix[deque.peekLast()]) {
-                deque.pollLast();
+            else
+            {
+                return -1;
             }
-
-            deque.addLast(i);
         }
-
-        return minLength == Integer.MAX_VALUE ? -1 : minLength;
+        long[] prefixSum=new long[n+1];
+        for(int i=0;i<n;i++)
+        {
+            prefixSum[i+1]=prefixSum[i]+nums[i];
+        }
+        int minLength=Integer.MAX_VALUE;
+        int[] q=new int[n+1];
+        int l=0,r=0;
+        for(int i=0;i<=n;i++)
+        {
+            while(r>l && prefixSum[i]-prefixSum[q[l]]>=k)
+            {
+                minLength=Math.min(minLength,i-q[l++]);
+            }
+            while(r>l && prefixSum[i]<=prefixSum[q[r-1]])
+            {
+                r--;
+            }
+            q[r++]=i;
+        }
+        return minLength>n?-1:minLength;
     }
 }

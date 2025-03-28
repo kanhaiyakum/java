@@ -1,58 +1,43 @@
 class Solution {
     public int[] maxPoints(int[][] grid, int[] queries) {
-        int[] k = new int[queries.length];
-        for(int i = 0;i<queries.length;i++){
-            k[i] = queries[i];
+        int rows = grid.length, cols = grid[0].length, qLen = queries.length;
+        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        
+        int[][] qIndex = new int[qLen][2];
+        for (int i = 0; i < qLen; i++) {
+            qIndex[i] = new int[]{queries[i], i};
         }
-        Arrays.sort(k);
-        Queue<node> pq = new PriorityQueue<>((a,b)->Integer.compare(a.val,b.val));
-        int i = 0;
-        int s = 0;
-        int[] ans = new int[k.length];
-        boolean[][] vis = new boolean[grid.length][grid[0].length];
-        pq.add(new node(grid[0][0],0,0));
-        vis[0][0] = true;
-        while(!pq.isEmpty()&&i<k.length){
-            if(k[i]>pq.peek().val){
-                node temp = pq.poll();
-                s++;
-                if(temp.i>0&&!vis[temp.i-1][temp.j]){
-                    vis[temp.i-1][temp.j] = true;
-                    pq.add(new node(grid[temp.i-1][temp.j],temp.i-1,temp.j));
+        Arrays.sort(qIndex, Comparator.comparingInt(a -> a[0]));
+        
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+        pq.offer(new int[]{grid[0][0], 0, 0});
+        
+        boolean[][] visited = new boolean[rows][cols];
+        visited[0][0] = true;
+        
+        int[] result = new int[qLen];
+        int count = 0;
+        
+        for (int[] q : qIndex) {
+            int query = q[0], index = q[1];
+
+            while (!pq.isEmpty() && pq.peek()[0] < query) {
+                int[] cell = pq.poll();
+                int r = cell[1], c = cell[2];
+                count++;
+
+                
+                for (int[] dir : directions) {
+                    int nr = r + dir[0], nc = c + dir[1];
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited[nr][nc]) {
+                        pq.offer(new int[]{grid[nr][nc], nr, nc});
+                        visited[nr][nc] = true;
+                    }
                 }
-                if(temp.i<grid.length-1&&!vis[temp.i+1][temp.j]){
-                    pq.add(new node(grid[temp.i+1][temp.j],temp.i+1,temp.j));
-                    vis[temp.i+1][temp.j] = true;
-                }if(temp.j>0&&!vis[temp.i][temp.j-1]){
-                    vis[temp.i][temp.j-1] = true;
-                    pq.add(new node(grid[temp.i][temp.j-1],temp.i,temp.j-1));
-                }if(temp.j<grid[0].length-1&&!vis[temp.i][temp.j+1]){
-                    pq.add(new node(grid[temp.i][temp.j+1],temp.i,temp.j+1));
-                    vis[temp.i][temp.j+1] = true;
-                }
-            }else{
-                ans[i] = s;
-                i++;
             }
+            result[index] = count;
         }
-        for(;i<k.length;i++){
-            ans[i] = s;
-        }
-        int[] ret = new int[k.length];
-        for(i = 0;i<queries.length;i++){
-            int index = Arrays.binarySearch(k,queries[i]);
-            ret[i] = ans[index];
-        }
-        return ret;
-    }
-}
-class node{
-    int val;
-    int i;
-    int j;
-    node(int val, int i, int j){
-        this.val = val;
-        this.i = i;
-        this.j = j;
+        
+        return result;
     }
 }
